@@ -52,6 +52,8 @@ class Point:
         return math.sqrt(self.x**2 + self.y**2)
 
     def norm(self):
+        if(self.x == 0 and self.y == 0):
+            return Point(0, 0)
         return Point(self.x / self.mag(), self.y / self.mag())
 
     def proj(self, rhs):

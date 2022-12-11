@@ -5,7 +5,7 @@ from Circle import Circle
 import matplotlib.pyplot as plt
 
 class ObstacleMap:
-    def __init__(self, x, y, obstacleList, radius = 0):
+    def __init__(self, x, y, obstacleList, radius=0):
         self.x = x
         self.y = y
         self.obstacleList = obstacleList
@@ -14,11 +14,16 @@ class ObstacleMap:
     def isInBounds(self, pt):
         return (pt.x >= 0 and pt.x <= self.x) and (pt.y >= 0 and pt.y <= self.y)
 
-    def checkCollision(self, line):
+    def checkLineCollision(self, line):
         for obstacle in self.obstacleList:
-            if(obstacle.intersects(line, self.radius)):
+            if(obstacle.lineIntersect(line, self.radius)):
                 return True
+        return False
 
+    def checkPointCollision(self, point):
+        for obstacle in self.obstacleList:
+            if(obstacle.pointIntersect(point, self.radius)):
+                return True
         return False
 
     def draw(self):
@@ -32,6 +37,3 @@ class ObstacleMap:
         for obstacle in self.obstacleList:
             obstacle.draw()
 
-a = ObstacleMap(12, 12, [Circle(Point(3, 3), 1), Circle(Point(12, 12), 2), Rectangle(Point(2, 12), Point(2.5, 8))])
-a.draw()
-plt.show()

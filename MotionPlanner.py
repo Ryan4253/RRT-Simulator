@@ -4,10 +4,6 @@ class MotionPlanner(ABC):
     def __init__(self, obstacleMap):
         self.field = obstacleMap
 
-    staticmethod
-    def samplePoint(self):
-        
-
-    def generatePath(self, pStart, pEnd, animation = True):
+    def generatePath(self, start, end, animate = True):
         pass
 

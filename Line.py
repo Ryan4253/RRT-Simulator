@@ -32,8 +32,7 @@ class Line:
 
     def closestPointTo(self, pt):
         closestPt = self.proj(pt)
-        bl = self.isBetween(closestPt)
-        print(bl)
+
         if(self.isBetween(closestPt)):
             return closestPt
 
