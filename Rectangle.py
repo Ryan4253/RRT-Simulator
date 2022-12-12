@@ -11,19 +11,26 @@ class Rectangle(Shape):
         self.bottomLeft = Point(topLeft.x, bottomRight.y)
         self.bottomRight = bottomRight
 
-    def intersects(self, line, dist = 0):
+    def lineIntersect(self, line, dist = 0):
         p1 = Point(self.topLeft.x-dist, self.topLeft.y+dist)
         p2 = Point(self.topRight.x+dist, self.topRight.y+dist)
-        p3 = Point(self.bottomRight.x+dist, self.bottomRight-dist)
+        p3 = Point(self.bottomRight.x+dist, self.bottomRight.y-dist)
         p4 = Point(self.bottomLeft.x-dist, self.bottomLeft.y-dist)
-        
 
         l1 = Line(p1, p2)
         l2 = Line(p2, p3)
         l3 = Line(p3, p4)
         l4 = Line(p4, p1)
 
-        return not (line.intersects(l1) or line.intersects(l2) or line.intersects(l3) or line.intersects(l4))
+        return (line.intersects(l1) or line.intersects(l2) or line.intersects(l3) or line.intersects(l4))
+
+    def pointIntersect(self, point, dist = 0):
+        xStart = self.topLeft.x - dist
+        xEnd = self.bottomRight.x + dist
+        yStart = self.bottomRight.y - dist
+        yEnd = self.topLeft.y + dist
+
+        return xStart <= point.x <= xEnd and yStart <= point.y <= yEnd
 
     def draw(self):
         x = self.topRight.x - self.bottomLeft.x

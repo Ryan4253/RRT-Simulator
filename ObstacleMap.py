@@ -10,14 +10,24 @@ class ObstacleMap:
         self.y = y
         self.obstacleList = obstacleList
         self.radius = radius
+        p1 = Point(radius, radius)
+        p2 = Point(radius, y-radius)
+        p3 = Point(x-radius, y-radius)
+        p4 = Point(x-radius, radius)
+        self.edgeList = [Line(p1, p2), Line(p2, p3), Line(p3, p4), Line(p4, p1)]
     
     def isInBounds(self, pt):
-        return (pt.x >= 0 and pt.x <= self.x) and (pt.y >= 0 and pt.y <= self.y)
+        return (0 <= pt.x <= self.x) and (0 <= pt.y <= self.y)
 
     def checkLineCollision(self, line):
         for obstacle in self.obstacleList:
             if(obstacle.lineIntersect(line, self.radius)):
                 return True
+
+        for edge in self.edgeList:
+            if(edge.intersects(line)):
+                return True
+            
         return False
 
     def checkPointCollision(self, point):

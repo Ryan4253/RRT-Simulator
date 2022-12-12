@@ -42,4 +42,23 @@ class Line:
         return self.end
 
     def intersects(self, line):
+        x1 = self.start.x
+        y1 = self.start.y
+        x2 = self.end.x
+        y2 = self.end.y
+        x3 = line.start.x
+        y3 = line.start.y
+        x4 = line.end.x
+        y4 = line.end.y
+
+        denom = (y4-y3)*(x2-x1) - (x4-x3)*(y2-y1)
+        if denom == 0: # parallel
+            return False
+        ua = ((x4-x3)*(y1-y3) - (y4-y3)*(x1-x3)) / denom
+        if ua < 0 or ua > 1: # out of range
+            return False
+        ub = ((x2-x1)*(y1-y3) - (y2-y1)*(x1-x3)) / denom
+        if ub < 0 or ub > 1: # out of range
+            return False
+        
         return True

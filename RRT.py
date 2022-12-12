@@ -5,6 +5,7 @@ from DiscretePath import DiscretePath
 from MotionPlanner import MotionPlanner
 from ObstacleMap import ObstacleMap
 from Circle import Circle
+from Rectangle import Rectangle
 from random import random
 from random import uniform
 from time import sleep
@@ -34,8 +35,10 @@ class RRT(MotionPlanner):
         for i in range(self.maxIteration):
             randPt = self.sample()
             closestNode, closestNodeId = self.findClosestNode(randPt)
-            newNode = closestNode.point + (randPt-closestNode.point).norm() * self.stepSize 
+            if(randPt == closestNode.point):
+                continue
 
+            newNode = closestNode.point + (randPt-closestNode.point).norm() * self.stepSize 
             if(self.obstacleMap.checkLineCollision(Line(closestNode.point, newNode))):
                 continue
 
@@ -49,7 +52,8 @@ class RRT(MotionPlanner):
                 if(not self.obstacleMap.checkLineCollision(Line(newNode, self.end.point))):
                     self.tree.append(Node(self.end.point, len(self.tree)-1))
                     self.path = self.retrace()
-                    self.draw()
+                    if(visualize):
+                        self.draw()
                     return i+1, self.path, perf_counter() - tStart
 
         return self.maxIteration, None, perf_counter() - tStart
@@ -99,12 +103,13 @@ class RRT(MotionPlanner):
         plt.pause(0.01)
 
 
-a = ObstacleMap(12, 12, [Circle(Point(3, 3), 1), Circle(Point(12, 12), 2)], 0.5)
-b = RRT(a, 0.5, 0.1, 3000)
-it, path, t = b.generatePath(Point(6, 6), Point(1, 1))
+a = ObstacleMap(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Circle(Point(12, 12), 2)], 0.5)
+b = RRT(a, 0.5, 0.1, 10000)
+it, path, t = b.generatePath(Point(6, 6), Point(1, 1), True)
 
 print("Iteration Count: ", it)
 print("Path Length: ", path.getLength())
 print("Time Elapsed: ", t)
+
 
     
