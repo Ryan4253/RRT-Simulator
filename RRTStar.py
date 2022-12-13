@@ -1,24 +1,22 @@
-from RRT import Node
 from Point import Point
+from Node import Node
 from Line import Line
-from Rotation import Rotation
+from DiscretePath import DiscretePath
+from MotionPlanner import MotionPlanner
 from random import random
 from random import uniform
 from time import sleep
-from SearchSpace import SearchSpace
-from Rectangle import  Rectangle
-from DiscretePath import DiscretePath
-import matplotlib.pyplot as plt
 from time import perf_counter
-from Circle import Circle
+import matplotlib.pyplot as plt
 
-class RRTStar:
-    def __init__(self, searchSpace, stepSize, goalSampleRate, searchRadius, maxIteration):
+class RRTStar(MotionPlanner):
+    def __init__(self, searchSpace, goalSampleRate = 0.1, stepSize = 1, searchRadius = 1, optimizationIter = 500, maxIter = 10000):
         self.stepSize = stepSize
         self.goalSampleRate = goalSampleRate
-        self.maxIteration = maxIteration
+        self.maxIteration = maxIter
         self.searchSpace = searchSpace
         self.searchRadius = searchRadius
+        self.optimizationIteration = optimizationIter
         self.start = None
         self.goal = None
         self.vertex = None
@@ -41,7 +39,7 @@ class RRTStar:
             if(newNode is None or self.searchSpace.checkLineCollision(Line(nearestNode.point, newNode.point))):
                 continue
             
-            neighbor = self.nearbyNodes(newNode.point)
+            neighbor = self.nearbyNodes(newNode)
             self.chooseParent(newNode, neighbor)
             self.rewire(newNode, neighbor)
             self.vertex.append(newNode)
@@ -65,22 +63,27 @@ class RRTStar:
         
         return Point(uniform(0, self.searchSpace.x), uniform(0, self.searchSpace.y))
 
+    def cost(self, node):
+        if node.parent is None:
+            return 0
+
+        return node.distTo(node.parent) + self.cost(node.parent)
+
     def makeNewNode(self, parent, point):
-        startPt = parent.point
-        if(point == startPt):
+        if(point == parent.point):
             return None
 
-        if(startPt.distTo(point) < self.stepSize):
+        if(parent.distTo(point) < self.stepSize):
             return Node(point, parent)
         
-        return Node(startPt + (point-startPt).norm() * self.stepSize, parent)
+        return Node(parent.point + (point-parent.point).norm() * self.stepSize, parent)
     
     def nearestNode(self, point):
-        return min(self.vertex, key = lambda node : node.point.distTo(point))
+        return min(self.vertex, key = lambda node : node.distTo(point))
 
-    def nearbyNodes(self, point):
+    def nearbyNodes(self, node):
         r = self.searchRadius
-        return [node for node in self.vertex if node.distTo(point) <= r and not self.searchSpace.checkLineCollision(Line(point, node.point))]
+        return [nd for nd in self.vertex if nd.distTo(node) <= r and not self.searchSpace.checkLineCollision(Line(node.point, nd.point))]
 
     def chooseParent(self, newNode, neighbor):
         parent = newNode.parent
@@ -107,11 +110,7 @@ class RRTStar:
         
         return DiscretePath(path)
 
-    def cost(self, node):
-        if node.parent is None:
-            return 0
 
-        return node.distTo(node.parent) + self.cost(node.parent)
 
     def draw(self):
         # Initialize
@@ -135,12 +134,3 @@ class RRTStar:
                 plt.plot([self.path[i].x, self.path[i+1].x], [self.path[i].y, self.path[i+1].y], '-g', linewidth = 3)
 
         plt.pause(0.001)
-
-
-#a = SearchSpace(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0)
-a = SearchSpace(12, 12, [Circle(Point(6, 6), 3.9)], 0)
-b = RRTStar(a, 0.5, 0.1, 5, 1500)
-it, path, time = b.generatePath(Point(2, 6), Point(10, 6), True)
-print(path.getLength())
-b.draw()
-plt.show()

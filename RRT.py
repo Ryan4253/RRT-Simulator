@@ -3,9 +3,6 @@ from Node import Node
 from Line import Line
 from DiscretePath import DiscretePath
 from MotionPlanner import MotionPlanner
-from SearchSpace import SearchSpace
-from Circle import Circle
-from Rectangle import Rectangle
 from random import random
 from random import uniform
 from time import sleep
@@ -13,11 +10,11 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 
 class RRT(MotionPlanner):
-    def __init__(self, SearchSpace, stepSize, goalSampleRate, maxIteration):
+    def __init__(self, searchSpace, stepSize, goalSampleRate, maxIteration):
         self.stepSize = stepSize
         self.goalSampleRate = goalSampleRate
         self.maxIteration = maxIteration
-        self.SearchSpace = SearchSpace
+        self.searchSpace = searchSpace
         self.start = None
         self.end = None
         self.tree = None
@@ -29,7 +26,7 @@ class RRT(MotionPlanner):
         self.path = None
         tStart = perf_counter()
 
-        if(self.obstacleMap.checkPointCollision(start) or self.obstacleMap.checkPointCollision(target)):
+        if(self.searchSpace.checkPointCollision(start) or self.searchSpace.checkPointCollision(target)):
             return -1, None, -1
 
         for i in range(self.maxIteration):
@@ -39,7 +36,7 @@ class RRT(MotionPlanner):
                 continue
 
             newNode = closestNode.point + (randPt-closestNode.point).norm() * self.stepSize 
-            if(self.obstacleMap.checkLineCollision(Line(closestNode.point, newNode))):
+            if(self.searchSpace.checkLineCollision(Line(closestNode.point, newNode))):
                 continue
 
             self.tree.append(Node(newNode, closestNodeId))
@@ -49,7 +46,7 @@ class RRT(MotionPlanner):
                 self.draw()
 
             if(newNode.distTo(self.end.point) < self.stepSize):
-                if(not self.obstacleMap.checkLineCollision(Line(newNode, self.end.point))):
+                if(not self.searchSpace.checkLineCollision(Line(newNode, self.end.point))):
                     self.tree.append(Node(self.end.point, len(self.tree)-1))
                     self.path = self.retrace()
                     if(visualize):
@@ -63,7 +60,7 @@ class RRT(MotionPlanner):
         if(random() < self.goalSampleRate):
             return self.end.point
         
-        return Point(uniform(0, self.obstacleMap.x), uniform(0, self.obstacleMap.y))
+        return Point(uniform(0, self.searchSpace.x), uniform(0, self.searchSpace.y))
 
     def findClosestNode(self, point):
         idx = min(range(len(self.tree)), key = lambda i : self.tree[i].point.distTo(point))
@@ -83,7 +80,7 @@ class RRT(MotionPlanner):
         plt.clf()
 
         # Draw Obstacles
-        self.obstacleMap.draw()
+        self.searchSpace.draw()
 
         # Draw Start & End Point
         plt.plot(self.start.point.x, self.start.point.y, "ob", markersize = 10)
@@ -102,15 +99,6 @@ class RRT(MotionPlanner):
             plt.show()
 
         plt.pause(0.001)
-
-
-#a = SearchSpace(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0.5)
-#b = RRT(a, 0.5, 0.1, 10000)
-#it, path, t = b.generatePath(Point(11, 11), Point(1, 1), False)
-
-#print("Iteration Count: ", it)
-#print("Path Length: ", path.getLength())
-#print("Time Elapsed: ", t)
 
 
     
