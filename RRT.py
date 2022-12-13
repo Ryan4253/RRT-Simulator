@@ -42,13 +42,13 @@ class RRT(MotionPlanner):
                 self.goal.parent = newNode
                 self.path = self.retrace()
                 if visualize:
-                    self.draw()
+                    self.draw("RRT - Complete")
                     plt.show()
                 return i + 1, self.path, perf_counter() - tStart
 
             if visualize:
                 sleep(0.001)
-                self.draw()
+                self.draw("RRT - Iteration {iteration}".format(iteration = i+1))
 
         self.path = self.retrace()
         return self.maxIteration, self.path, perf_counter() - tStart
@@ -83,9 +83,12 @@ class RRT(MotionPlanner):
         
         return DiscretePath(path)
 
-    def draw(self):
+    def draw(self, title = "RRT"):
         # Initialize
         plt.clf()
+
+        # Draw Title
+        plt.title(title)
 
         # Draw Obstacles
         self.searchSpace.draw()
