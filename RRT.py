@@ -13,9 +13,9 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 
 class RRT(MotionPlanner):
-    def __init__(self, obstacleMap, stepSize, goalConvergenceRate, maxIteration):
+    def __init__(self, obstacleMap, stepSize, goalSampleRate, maxIteration):
         self.stepSize = stepSize
-        self.goalConvergenceRate = goalConvergenceRate
+        self.goalSampleRate = goalSampleRate
         self.maxIteration = maxIteration
         self.obstacleMap = obstacleMap
         self.start = None
@@ -45,7 +45,7 @@ class RRT(MotionPlanner):
             self.tree.append(Node(newNode, closestNodeId))
 
             if visualize:
-                sleep(0.01)
+                sleep(0.001)
                 self.draw()
 
             if(newNode.distTo(self.end.point) < self.stepSize):
@@ -54,12 +54,13 @@ class RRT(MotionPlanner):
                     self.path = self.retrace()
                     if(visualize):
                         self.draw()
+
                     return i+1, self.path, perf_counter() - tStart
 
         return self.maxIteration, None, perf_counter() - tStart
 
     def sample(self):
-        if(random() < self.goalConvergenceRate):
+        if(random() < self.goalSampleRate):
             return self.end.point
         
         return Point(uniform(0, self.obstacleMap.x), uniform(0, self.obstacleMap.y))
@@ -85,31 +86,31 @@ class RRT(MotionPlanner):
         self.obstacleMap.draw()
 
         # Draw Start & End Point
-        plt.plot(self.start.point.x, self.start.point.y, "or", markersize = 15)
-        plt.plot(self.end.point.x, self.end.point.y, "og", markersize = 15)
+        plt.plot(self.start.point.x, self.start.point.y, "ob", markersize = 10)
+        plt.plot(self.end.point.x, self.end.point.y, marker = "*", color = 'y', markersize = 15)
 
         # Draw Tree
         for node in self.tree:
             if(node.parent is not None):
-                plt.plot([node.point.x, self.tree[node.parent].point.x], [node.point.y, self.tree[node.parent].point.y], '-b')
+                plt.plot([node.point.x, self.tree[node.parent].point.x], [node.point.y, self.tree[node.parent].point.y], '-r')
 
         # Draw Path
         if(self.path is not None):
             for i in range(self.path.size()-1):
-                plt.plot([self.path[i].x, self.path[i+1].x], [self.path[i].y, self.path[i+1].y], '-g')
+                plt.plot([self.path[i].x, self.path[i+1].x], [self.path[i].y, self.path[i+1].y], '-g', linewidth = 3)
             plt.pause(0.01)
             plt.show()
 
-        plt.pause(0.01)
+        plt.pause(0.001)
 
 
-a = ObstacleMap(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Circle(Point(12, 12), 2)], 0.5)
-b = RRT(a, 0.5, 0.1, 10000)
-it, path, t = b.generatePath(Point(6, 6), Point(1, 1), True)
+#a = ObstacleMap(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0.5)
+#b = RRT(a, 0.5, 0.1, 10000)
+#it, path, t = b.generatePath(Point(11, 11), Point(1, 1), False)
 
-print("Iteration Count: ", it)
-print("Path Length: ", path.getLength())
-print("Time Elapsed: ", t)
+#print("Iteration Count: ", it)
+#print("Path Length: ", path.getLength())
+#print("Time Elapsed: ", t)
 
 
     

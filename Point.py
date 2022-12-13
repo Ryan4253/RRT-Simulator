@@ -45,6 +45,9 @@ class Point:
     def distTo(self, rhs):
         return math.sqrt((self.x - rhs.x)**2 + (self.y - rhs.y)**2)
 
+    def distTo2(self, rhs):
+        return (self.x - rhs.x)**2 + (self.y - rhs.y)**2
+
     def angleTo(self, rhs):
         return math.atan2(self.x - rhs.x, self.y - rhs.y)
 
