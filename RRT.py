@@ -3,7 +3,7 @@ from Node import Node
 from Line import Line
 from DiscretePath import DiscretePath
 from MotionPlanner import MotionPlanner
-from ObstacleMap import ObstacleMap
+from SearchSpace import SearchSpace
 from Circle import Circle
 from Rectangle import Rectangle
 from random import random
@@ -13,11 +13,11 @@ from time import perf_counter
 import matplotlib.pyplot as plt
 
 class RRT(MotionPlanner):
-    def __init__(self, obstacleMap, stepSize, goalSampleRate, maxIteration):
+    def __init__(self, SearchSpace, stepSize, goalSampleRate, maxIteration):
         self.stepSize = stepSize
         self.goalSampleRate = goalSampleRate
         self.maxIteration = maxIteration
-        self.obstacleMap = obstacleMap
+        self.SearchSpace = SearchSpace
         self.start = None
         self.end = None
         self.tree = None
@@ -104,7 +104,7 @@ class RRT(MotionPlanner):
         plt.pause(0.001)
 
 
-#a = ObstacleMap(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0.5)
+#a = SearchSpace(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0.5)
 #b = RRT(a, 0.5, 0.1, 10000)
 #it, path, t = b.generatePath(Point(11, 11), Point(1, 1), False)
 

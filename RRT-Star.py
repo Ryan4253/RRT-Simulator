@@ -5,9 +5,8 @@ from Rotation import Rotation
 from random import random
 from random import uniform
 from time import sleep
-from ObstacleMap import ObstacleMap
+from SearchSpace import SearchSpace
 from Rectangle import  Rectangle
-import math
 from DiscretePath import DiscretePath
 import matplotlib.pyplot as plt
 from time import perf_counter
@@ -138,8 +137,8 @@ class RRTStar:
         plt.pause(0.001)
 
 
-#a = ObstacleMap(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0)
-a = ObstacleMap(12, 12, [Circle(Point(6, 6), 3.9)], 0)
+#a = SearchSpace(12, 12, [Rectangle(Point(3, 10), Point(3.5, 0)), Rectangle(Point(8.5, 12), Point(9, 2))], 0)
+a = SearchSpace(12, 12, [Circle(Point(6, 6), 3.9)], 0)
 b = RRTStar(a, 0.5, 0.1, 5, 1500)
 it, path, time = b.generatePath(Point(2, 6), Point(10, 6), True)
 print(path.getLength())

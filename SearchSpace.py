@@ -4,7 +4,7 @@ from Rectangle import Rectangle
 from Circle import Circle
 import matplotlib.pyplot as plt
 
-class ObstacleMap:
+class SearchSpace:
     def __init__(self, x, y, obstacleList, radius=0):
         self.x = x
         self.y = y
