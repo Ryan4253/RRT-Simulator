@@ -1,7 +1,7 @@
+from random import random
+from random import uniform
 from Point import Point
 from Line import Line
-from Rectangle import Rectangle
-from Circle import Circle
 import matplotlib.pyplot as plt
 
 class SearchSpace:
@@ -16,8 +16,14 @@ class SearchSpace:
         p4 = Point(x-radius, radius)
         self.edgeList = [Line(p1, p2), Line(p2, p3), Line(p3, p4), Line(p4, p1)]
     
-    def isInBounds(self, pt):
-        return (0 <= pt.x <= self.x) and (0 <= pt.y <= self.y)
+    def randomPoint(self):
+            return Point(uniform(0, self.x), uniform(0, self.y))
+
+    def randomLegalPoint(self):
+        while True:
+            pt = self.randomPoint()
+            if self.checkPointCollision(pt):
+                return pt
 
     def checkLineCollision(self, line):
         for obstacle in self.obstacleList:
@@ -37,7 +43,6 @@ class SearchSpace:
         return False
 
     def draw(self):
-        plt.title('Field')
         plt.axis('square')
         plt.xlabel('X (Feet)')
         plt.ylabel('Y (Feet)')

@@ -1,10 +1,8 @@
-from Point import Point
 from Node import Node
 from Line import Line
 from DiscretePath import DiscretePath
 from MotionPlanner import MotionPlanner
 from random import random
-from random import uniform
 from time import sleep
 from time import perf_counter
 import matplotlib.pyplot as plt
@@ -27,6 +25,7 @@ class RRTStar(MotionPlanner):
         self.goal = Node(goal)
         self.vertex = [self.start]
         tStart = perf_counter()
+        optiIter = 0
 
         if(self.searchSpace.checkPointCollision(start) or self.searchSpace.checkPointCollision(goal)):
             return -1, None, -1
@@ -49,6 +48,15 @@ class RRTStar(MotionPlanner):
                 self.goal.parent = newNode
                 self.vertex.append(self.goal)
 
+            if self.goal.parent is not None:
+                optiIter += 1
+
+            if optiIter >= self.optimizationIteration:
+                if visualize:
+                    self.draw()
+                    plt.show()
+                return i+1, self.path, perf_counter() - tStart
+
             if visualize:
                 self.path = self.retrace()
                 sleep(0.001)
@@ -61,7 +69,7 @@ class RRTStar(MotionPlanner):
         if(random() < self.goalSampleRate):
             return self.goal.point
         
-        return Point(uniform(0, self.searchSpace.x), uniform(0, self.searchSpace.y))
+        return self.searchSpace.randomPoint()
 
     def cost(self, node):
         if node.parent is None:
@@ -109,8 +117,6 @@ class RRTStar(MotionPlanner):
             parent = parent.parent
         
         return DiscretePath(path)
-
-
 
     def draw(self):
         # Initialize

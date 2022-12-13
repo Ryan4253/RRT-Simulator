@@ -1,79 +1,87 @@
-from Point import Point
 from Node import Node
 from Line import Line
 from DiscretePath import DiscretePath
 from MotionPlanner import MotionPlanner
 from random import random
-from random import uniform
 from time import sleep
 from time import perf_counter
 import matplotlib.pyplot as plt
 
 class RRT(MotionPlanner):
-    def __init__(self, searchSpace, stepSize, goalSampleRate, maxIteration):
+    def __init__(self, searchSpace, goalSampleRate = 0.1, stepSize = 1, maxIter = 10000):
         self.stepSize = stepSize
         self.goalSampleRate = goalSampleRate
-        self.maxIteration = maxIteration
+        self.maxIteration = maxIter
         self.searchSpace = searchSpace
         self.start = None
-        self.end = None
-        self.tree = None
-
-    def generatePath(self, start, target, visualize = True):
-        self.start = Node(start)
-        self.end = Node(target)
-        self.tree = [self.start]
+        self.goal = None
+        self.vertex = None
         self.path = None
+    
+    def generatePath(self, start, goal, visualize = True):
+        self.start = Node(start)
+        self.goal = Node(goal)
+        self.vertex = [self.start]
         tStart = perf_counter()
 
-        if(self.searchSpace.checkPointCollision(start) or self.searchSpace.checkPointCollision(target)):
+        if(self.searchSpace.checkPointCollision(start) or self.searchSpace.checkPointCollision(goal)):
             return -1, None, -1
 
         for i in range(self.maxIteration):
-            randPt = self.sample()
-            closestNode, closestNodeId = self.findClosestNode(randPt)
-            if(randPt == closestNode.point):
+            sample = self.getRandomPoint()
+            nearestNode = self.nearestNode(sample)
+            newNode = self.makeNewNode(nearestNode, sample)
+
+            if(newNode is None or self.searchSpace.checkLineCollision(Line(nearestNode.point, newNode.point))):
                 continue
 
-            newNode = closestNode.point + (randPt-closestNode.point).norm() * self.stepSize 
-            if(self.searchSpace.checkLineCollision(Line(closestNode.point, newNode))):
-                continue
+            self.vertex.append(newNode)
 
-            self.tree.append(Node(newNode, closestNodeId))
+            if (self.goal.parent is None and newNode.distTo(self.goal) <= self.stepSize and 
+                not self.searchSpace.checkLineCollision(Line(newNode.point, self.goal.point))):
+                self.goal.parent = newNode
+                self.path = self.retrace()
+                if visualize:
+                    self.draw()
+                    plt.show()
+                return i + 1, self.path, perf_counter() - tStart
 
             if visualize:
                 sleep(0.001)
                 self.draw()
 
-            if(newNode.distTo(self.end.point) < self.stepSize):
-                if(not self.searchSpace.checkLineCollision(Line(newNode, self.end.point))):
-                    self.tree.append(Node(self.end.point, len(self.tree)-1))
-                    self.path = self.retrace()
-                    if(visualize):
-                        self.draw()
+        self.path = self.retrace()
+        return self.maxIteration, self.path, perf_counter() - tStart
 
-                    return i+1, self.path, perf_counter() - tStart
-
-        return self.maxIteration, None, perf_counter() - tStart
-
-    def sample(self):
+    def getRandomPoint(self):
         if(random() < self.goalSampleRate):
-            return self.end.point
+            return self.goal.point
         
-        return Point(uniform(0, self.searchSpace.x), uniform(0, self.searchSpace.y))
+        return self.searchSpace.randomPoint()
 
-    def findClosestNode(self, point):
-        idx = min(range(len(self.tree)), key = lambda i : self.tree[i].point.distTo(point))
-        return self.tree[idx], idx
+    def makeNewNode(self, parent, point):
+        if(point == parent.point):
+            return None
+
+        if(parent.distTo(point) < self.stepSize):
+            return Node(point, parent)
+        
+        return Node(parent.point + (point-parent.point).norm() * self.stepSize, parent)
+    
+    def nearestNode(self, point):
+        return min(self.vertex, key = lambda node : node.distTo(point))
 
     def retrace(self):
-        ret = []
-        index = len(self.tree)-1
-        while True:
-            ret.insert(0, self.tree[index].point)
-            if(self.tree[index].parent is None):
-                return DiscretePath(ret)
-            index = self.tree[index].parent           
+        if(self.goal.parent is None):
+            return None
+
+        path = [self.goal.point]
+        parent = self.goal.parent
+        while parent:
+            path.insert(0, parent.point)
+            parent = parent.parent
+        
+        return DiscretePath(path)
 
     def draw(self):
         # Initialize
@@ -84,21 +92,16 @@ class RRT(MotionPlanner):
 
         # Draw Start & End Point
         plt.plot(self.start.point.x, self.start.point.y, "ob", markersize = 10)
-        plt.plot(self.end.point.x, self.end.point.y, marker = "*", color = 'y', markersize = 15)
+        plt.plot(self.goal.point.x, self.goal.point.y, marker = "*", color = 'y', markersize = 15)
 
         # Draw Tree
-        for node in self.tree:
+        for node in self.vertex:
             if(node.parent is not None):
-                plt.plot([node.point.x, self.tree[node.parent].point.x], [node.point.y, self.tree[node.parent].point.y], '-r')
+                plt.plot([node.point.x, node.parent.point.x], [node.point.y, node.parent.point.y], '-r')
 
         # Draw Path
         if(self.path is not None):
             for i in range(self.path.size()-1):
                 plt.plot([self.path[i].x, self.path[i+1].x], [self.path[i].y, self.path[i+1].y], '-g', linewidth = 3)
-            plt.pause(0.01)
-            plt.show()
 
         plt.pause(0.001)
-
-
-    
